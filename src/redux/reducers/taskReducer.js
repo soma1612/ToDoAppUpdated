@@ -6,7 +6,6 @@ const initialState = {
 };
 
 const taskReducer = (state = initialState, action) => {
-   //debugger;
     switch (action.type) {
         case 'SAVE_TASK':
             return {

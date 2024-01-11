@@ -26,13 +26,22 @@ const Trash = () => {
             />
             <hr style={{ margin: '25px 0px' }} />
             <div>
-                {filteredData.length > 0 ? (
+                {/* {filteredData.length > 0 ? (
                     filteredData.map((data) => (
-                        <MuiCard  page="trash" taskDetails={data} />
+                        <MuiCard key={data.id} page="trash" taskDetails={data} />
                     ))
                 ) : (
                     null
-                )}
+                )} */}
+                {filteredData && filteredData.length > 0 ? (
+              filteredData.map((data) => (
+                <div key={data.id} data-testid="mui-card">
+                <MuiCard page="trash" taskDetails={data} />
+            </div>
+              ))
+            ) : (
+              null
+            )}
             </div>
         </>
     )

@@ -22,12 +22,12 @@ const MuiCard = (props) => {
     };
 
     const onDelete = (taskId) => {
-         dispatch(deleteTask(taskId));
+        dispatch(deleteTask(taskId));
     }
 
     const onEdit = (taskId) => {
         dispatch(selectTaskToEdit(taskId))
-        openModal(); 
+        openModal();
     }
 
     return (
@@ -40,7 +40,6 @@ const MuiCard = (props) => {
 
                 <CardContent
                     style={{ display: 'flex', alignItems: 'center' }}>
-
                     {page.includes("home") ? (
                         <Checkbox
                             checked={checked}
@@ -48,23 +47,21 @@ const MuiCard = (props) => {
                             style={{ paddingLeft: "0px" }}
                         />
                     ) : null}
-
                     <Typography
                         style={{ marginLeft: '8px', textTransform: 'uppercase' }}>
-                        <div>{taskDetails.taskName}</div>
-                         <div>{taskDetails.completionTime}</div>
+                            {taskDetails.taskName}
+                            <br/>
+                            {taskDetails.completionTime}
                     </Typography>
                 </CardContent>
                 {page.includes("home") ? (
                     <CardActions>
-
                         <IconButton
                             aria-label="edit"
                             onClick={() => onEdit(taskDetails.id)}>
                             <EditIcon />
                         </IconButton>
                         <MuiEditModal open={isopenModal} handleClose={closeModal} />
-
                         <IconButton
                             aria-label="delete"
                             onClick={() => onDelete(taskDetails.id)}>
@@ -78,16 +75,5 @@ const MuiCard = (props) => {
         </>
     )
 }
-
-// PageComponent.propTypes = {
-//     page: PropTypes.string.isRequired,
-//     taskDetails: PropTypes.object.isRequired,
-//     taskDetails: PropTypes.shape({
-//         includes: PropTypes.func.isRequired,
-//         taskName: PropTypes.string.isRequired,
-//         completionTime: PropTypes.string.isRequired,
-//       }).isRequired,
-//   };
-
 
 export default MuiCard;

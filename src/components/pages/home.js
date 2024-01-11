@@ -4,7 +4,6 @@ import { useSelector } from 'react-redux';
 import { TextField } from '@mui/material';
 
 const Home = () => {
-    debugger;
     const saveTask = useSelector((state) => state.saveTask);
     const [inputValue, setInputValue] = useState('');
 
@@ -28,9 +27,12 @@ const Home = () => {
             <hr style={{ margin: '25px 0px' }} />
 
             <div>
-                {filteredData.length > 0 ? (
+                {filteredData && filteredData.length > 0 ? (
                     filteredData.map((data) => (
-                        <MuiCard page="home" taskDetails={data} />
+                        <div key={data.id} data-testid="mui-card">
+                            <MuiCard page="home" taskDetails={data} />
+                        </div>
+
                     ))
                 ) : (
                     null

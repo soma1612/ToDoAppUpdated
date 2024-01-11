@@ -1,13 +1,57 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import MuiButton from '../../controls/MuiButton'; // Adjust the path based on your project structure
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import MuiButton from '../../controls/floatingAddButton';
+import { Provider } from 'react-redux';
+import configureStore from 'redux-mock-store';
+
+const mockStore = configureStore([]);
 
 describe('MuiButton Component', () => {
-  test('renders MuiButton component and opens modal on click', () => {
-    render(<MuiButton />);
+  let store;
+  beforeEach(() => {
+    store = mockStore({
+      saveTask: [
+        { id: 1, taskName: 'Task 1' },
+        { id: 2, taskName: 'Task 2' },
+      ],
+    });
+  });
+
+  test('renders MuiButton component and opens modal on click', async () => {
+    render(
+      <Provider store={store}>
+        <MuiButton />
+      </Provider>
+    );
+  
+    // Check if MuiButton component is rendered
+    const fabButton = screen.getByRole('button');
+    expect(fabButton).toBeInTheDocument();
+  
+    // Check if modal is initially closed
+    const modal = screen.queryByRole('dialog');
+    expect(modal).not.toBeInTheDocument();
+  
+    // Click the MuiButton to open the modal
+    fireEvent.click(fabButton);
+  
+    // Wait for the modal to be open
+    await waitFor(() => {
+      const openedModal = screen.getByRole('dialog');
+      expect(openedModal).toBeInTheDocument();
+    });
+  });
+  
+  test('renders MuiButton component and opens/closes modal on click', async () => {
+    render(
+      <Provider store={store}>
+        <MuiButton />
+      </Provider>
+    );
 
     // Check if MuiButton component is rendered
-    const fabButton = screen.getByRole('button', { name: /add/i });
+    const fabButton = screen.getByRole('button');
     expect(fabButton).toBeInTheDocument();
 
     // Check if modal is initially closed
@@ -17,28 +61,22 @@ describe('MuiButton Component', () => {
     // Click the MuiButton to open the modal
     fireEvent.click(fabButton);
 
-    // Check if modal is open after clicking the MuiButton
-    const openedModal = screen.getByRole('dialog');
-    expect(openedModal).toBeInTheDocument();
+    // Wait for the modal to be open
+    await waitFor(() => {
+      const openedModal = screen.getByRole('dialog');
+      expect(openedModal).toBeInTheDocument();
+    });
+
+    // Click the close button to close the modal
+    const closeButton = await screen.findByRole('button', { name: /Cancel/i });
+    fireEvent.click(closeButton);
+
+    // Wait for the modal to be closed
+    await waitFor(() => {
+      const closedModal = screen.queryByRole('dialog');
+      expect(closedModal).not.toBeInTheDocument();
+    });
   });
 
-  test('closes the modal on calling handleClose', () => {
-    render(<MuiButton />);
-
-    // Click the MuiButton to open the modal
-    fireEvent.click(screen.getByRole('button', { name: /add/i }));
-
-    // Check if modal is open
-    const openedModal = screen.getByRole('dialog');
-    expect(openedModal).toBeInTheDocument();
-
-    // Call the handleClose function to close the modal
-    fireEvent.click(screen.getByRole('button', { name: /close/i }));
-
-    // Check if modal is closed after calling handleClose
-    const closedModal = screen.queryByRole('dialog');
-    expect(closedModal).not.toBeInTheDocument();
-  });
-
-  
 });
+

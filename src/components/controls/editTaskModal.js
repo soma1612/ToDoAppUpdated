@@ -5,6 +5,7 @@ import { updateTask } from '../../redux/actions/taskActions';
 import PropTypes from 'prop-types';
 
 
+
 const MuiEditModal = (props) => {
 
     const { open, handleClose } = props;
@@ -12,8 +13,8 @@ const MuiEditModal = (props) => {
     const saveTask = useSelector((state) => state.saveTask);
     const selectedTaskToEdit = useSelector((state) => state.selectedTaskToEdit);
 
-    const [taskName, setTaskName] = useState();
-    const [completionTime, setCompletionTime] = useState();
+    const [taskName, setTaskName] = useState('');
+    const [completionTime, setCompletionTime] = useState('');
     const [error, setError] = useState('');
 
     useEffect(() => {
@@ -22,8 +23,8 @@ const MuiEditModal = (props) => {
 
         // If the selected item exists, set the taskName state to its taskName
         if (selectedTask) {
-            setTaskName(selectedTask.taskName);
-            setCompletionTime(selectedTask.completionTime)
+            setTaskName(selectedTask.taskName || '');
+            setCompletionTime(selectedTask.completionTime || '')
         }
     }, [selectedTaskToEdit, saveTask]);
 
@@ -55,8 +56,8 @@ const MuiEditModal = (props) => {
             //save data
             const taskDetailsToEdit = {
                 taskName: taskName,
-                completionTime: formattedCompletedDateTime,
-                notifyTime: completionTime
+                completionTime: completionTime //formattedCompletedDateTime,
+                //notifyTime: completionTime
                 // completionTime: formattedCompletedDateTime
             }
 

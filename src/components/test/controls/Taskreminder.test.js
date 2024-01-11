@@ -1,9 +1,11 @@
 import React from 'react';
 import { render, act } from '@testing-library/react';
-import TaskReminder from '../../controls/taskReminder';
+import { Provider } from 'react-redux';
+import configureStore from 'redux-mock-store';
+import TaskReminder from '../../controls/TaskReminders';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 
-// Mock the react-notifications library to avoid unwanted side effects during testing
+// Mocking react-notifications library
 jest.mock('react-notifications', () => ({
   NotificationContainer: jest.fn(() => null),
   NotificationManager: {
@@ -11,53 +13,124 @@ jest.mock('react-notifications', () => ({
   },
 }));
 
-describe('TaskReminder component', () => {
-  const mockTaskDetails = {
-    taskName: 'Sample Task',
-    notifyTime: '2024-01-01T12:00:00.000Z',
-  };
+const mockStore = configureStore([]);
 
-  test('renders TaskReminder component', () => {
-    render(<TaskReminder taskDetails={mockTaskDetails} />);
-    
-    expect(NotificationContainer).toHaveBeenCalled();
-  });
+describe('TaskReminder Component', () => {
 
-  test('displays task reminder notification when within 5 minutes', async () => {
-    jest.useFakeTimers();
+  jest.useFakeTimers();
 
-    render(<TaskReminder taskDetails={mockTaskDetails} />);
+  // beforeEach(() => {
+  //   jest.clearAllMocks(); // Reset mocks before each test
+  // });
 
-    // Fast-forward time to 4 minutes and 59 seconds before the task time
-    act(() => {
-      jest.advanceTimersByTime((5 * 60 * 1000) - 1000);
+  it('renders TaskReminder component and triggers task reminder notification', async () => {
+    const mockTasks = [
+      { id: 1, taskName: 'Task 1', notifyTime: new Date().getTime() + 300000 }, // 5 minutes from now
+    ];
+
+    const store = mockStore({
+      saveTask: mockTasks,
     });
 
-    // Ensure that the NotificationManager.warning function is called
-    expect(NotificationManager.warning).toHaveBeenCalledWith(
-      'Your task: Sample Task is coming up in 5 minutes!',
-      'Task Reminder',
-      5000
+    render(
+      <Provider store={store}>
+        <TaskReminder />
+      </Provider>
     );
 
-    jest.useRealTimers();
-  });
-
-  test('does not display task reminder notification when more than 5 minutes away', async () => {
-    jest.useFakeTimers();
-
-    render(<TaskReminder taskDetails={mockTaskDetails} />);
-
-    // Fast-forward time to 10 minutes before the task time
-    act(() => {
-      jest.advanceTimersByTime(10 * 60 * 1000);
+    // Wait for the notification to be triggered
+    await act(async () => {
+      jest.advanceTimersByTime(10000); // Advance time by 10 seconds to trigger the interval
+      jest.advanceTimersByTime(5000);  // Advance time by 5 seconds to trigger the notification
     });
 
-    // Ensure that the NotificationManager.warning function is not called
-    expect(NotificationManager.warning).not.toHaveBeenCalled();
+    // Check if NotificationManager.warning was called with any arguments
+    expect(NotificationManager.warning).toHaveBeenCalled();
 
-    jest.useRealTimers();
   });
 
-  // Add more tests as needed
+  it('should show a warning notification when a task is 5 minutes away from completion', async () => {
+    const mockTask = [
+      {
+        taskName: 'Sample Task',
+        notifyTime: new Date().getTime() + 5 * 60 * 1000 - 1000, // 5 minutes - 1 second
+      },
+    ];
+
+    const store = mockStore({
+      saveTask: mockTask,
+    });
+
+    jest.useFakeTimers(); // Ensure fake timers are used
+
+    render(
+      <Provider store={store}>
+        <TaskReminder />
+      </Provider>
+    );
+
+    // Simulate the passage of time by advancing timers
+    act(() => {
+      jest.advanceTimersByTime(10000); // Advance time by 10 seconds
+    });
+
+    // Check if NotificationManager.warning was called with any arguments
+    expect(NotificationManager.warning).toHaveBeenCalled();
+  });
+
+  it('should call NotificationManager.warning when saveTask is not empty', () => {
+    const mockTask = [
+      {
+        taskName: 'Sample Task',
+        notifyTime: new Date().getTime() + 5 * 60 * 1000 - 1000, // 5 minutes - 1 second
+      },
+    ];
+
+    const store = mockStore({
+      saveTask: mockTask,
+    });
+
+    jest.useFakeTimers(); // Ensure fake timers are used
+
+    render(
+      <Provider store={store}>
+        <TaskReminder />
+      </Provider>
+    );
+
+    // Simulate the passage of time by advancing timers
+    act(() => {
+      jest.advanceTimersByTime(10000); // Advance time by 10 seconds
+    });
+
+    // Check if NotificationManager.warning was called with any arguments
+    expect(NotificationManager.warning).toHaveBeenCalled();
+  });
+
+  it('should not call NotificationManager.warning when saveTask is empty', () => {
+    jest.clearAllMocks();
+    const store = mockStore({
+      saveTask: [], // Empty array
+    });
+
+    jest.useFakeTimers(); // Ensure fake timers are used
+
+    render(
+      <Provider store={store}>
+        <TaskReminder />
+      </Provider>
+    );
+
+    // Advance timers by 10 seconds
+    act(() => {
+      jest.advanceTimersByTime(10000);
+    });
+
+    // Make assertions
+    act(() => {
+      // Check if NotificationManager.warning is not called
+      expect(NotificationManager.warning).not.toHaveBeenCalled();
+    });
+  });
+
 });

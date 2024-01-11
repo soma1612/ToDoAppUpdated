@@ -1,76 +1,90 @@
+// MuiEditModal.test.js
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Provider } from 'react-redux';
-import configureMockStore from 'redux-mock-store';
+import configureStore from 'redux-mock-store';
 import MuiEditModal from '../../controls/editTaskModal';
 
-// Mock the useDispatch and useSelector hooks
-jest.mock('react-redux', () => ({
-  ...jest.requireActual('react-redux'),
-  useDispatch: jest.fn(),
-  useSelector: jest.fn(),
-}));
+const mockStore = configureStore([]);
 
-// Mock the updateTask action creator
-const mockUpdateTask = jest.fn();
+describe('MuiEditModal Component', () => {
+  let store;
 
-// Create a mock store
-const mockStore = configureMockStore([]);
-
-describe('MuiEditModal component', () => {
-  const mockSelectedTaskToEdit = 'sampleTaskId';
-  const mockSaveTask = [
-    {
-      id: 'sampleTaskId',
-      taskName: 'Sample Task',
-      completionTime: '2024-01-01T12:00:00.000Z',
-    },
-  ];
-
-  test('renders MuiEditModal correctly', () => {
-    // Mock the useSelector hook to return the necessary data
-    jest.spyOn(React, 'useSelector').mockReturnValueOnce(mockSelectedTaskToEdit);
-    jest.spyOn(React, 'useSelector').mockReturnValueOnce(mockSaveTask);
-
-    render(
-      <Provider store={mockStore({})}>
-        <MuiEditModal open={true} handleClose={() => {}} />
-      </Provider>
-    );
-
-    // Add your assertions based on the rendered content
-    expect(screen.getByLabelText('Task Name')).toBeInTheDocument();
-    expect(screen.getByLabelText('Data Time')).toBeInTheDocument();
-    // ...
-  });
-
-  test('handles form submission correctly', () => {
-    // Mock the useDispatch hook to return the mockUpdateTask function
-    jest.spyOn(React, 'useDispatch').mockReturnValueOnce(mockUpdateTask);
-
-    // Mock the useSelector hook to return the necessary data
-    jest.spyOn(React, 'useSelector').mockReturnValueOnce(mockSelectedTaskToEdit);
-    jest.spyOn(React, 'useSelector').mockReturnValueOnce(mockSaveTask);
-
-    render(
-      <Provider store={mockStore({})}>
-        <MuiEditModal open={true} handleClose={() => {}} />
-      </Provider>
-    );
-
-    // Simulate user input
-    fireEvent.change(screen.getByLabelText('Task Name'), { target: { value: 'Updated Task' } });
-    fireEvent.change(screen.getByLabelText('Data Time'), { target: { value: '2024-01-01T14:00' } });
-
-    // Simulate form submission
-    fireEvent.click(screen.getByText('Edit'));
-
-    // Check if updateTask action creator is called with the correct arguments
-    expect(mockUpdateTask).toHaveBeenCalledWith({
-      taskName: 'Updated Task',
-      completionTime: '2024-01-01T14:00:00.000Z',
+  beforeEach(() => {
+    store = mockStore({
+      saveTask: [
+        { id: 1, taskName: 'Task 1', completionTime: '2022-01-11T12:00' },
+        // Add more sample tasks as needed
+      ],
+      selectedTaskToEdit: 1,
     });
   });
 
-  // Add more tests as needed
+  it('renders MuiEditModal component with initial values', () => {
+    render(
+      <Provider store={store}>
+        <MuiEditModal open handleClose={() => {}} />
+      </Provider>
+    );
+
+    const taskNameInput = screen.getByLabelText('Task Name');
+    const dateTimeInput = screen.getByLabelText('Data Time');
+
+    expect(taskNameInput.value).toBe('Task 1');
+    expect(dateTimeInput.value).toBe('2022-01-11T12:00');
+  });
+
+  it('updates state on input change', () => {
+    render(
+      <Provider store={store}>
+        <MuiEditModal open handleClose={() => {}} />
+      </Provider>
+    );
+
+    const taskNameInput = screen.getByLabelText('Task Name');
+    const dateTimeInput = screen.getByLabelText('Data Time');
+
+    fireEvent.change(taskNameInput, { target: { value: 'Updated Task' } });
+    fireEvent.change(dateTimeInput, { target: { value: '2022-01-12T15:30' } });
+
+    expect(taskNameInput.value).toBe('Updated Task');
+    expect(dateTimeInput.value).toBe('2022-01-12T15:30');
+  });
+
+  it('handles edit click and dispatches updateTask action', () => {
+    render(
+      <Provider store={store}>
+        <MuiEditModal open handleClose={() => {}} />
+      </Provider>
+    );
+
+    const editButton = screen.getByText('Edit');
+    fireEvent.click(editButton);
+
+    const actions = store.getActions();
+    expect(actions).toEqual([
+      {
+        type: 'UPDATE_TASK',
+        payload: {
+          taskName: 'Task 1',
+          completionTime: '2022-01-11T12:00',
+          notifyTime: '2022-01-11T12:00',
+        },
+      },
+    ]);
+  });
+
+  it('handles cancel click and closes the modal', () => {
+    const handleClose = jest.fn();
+    render(
+      <Provider store={store}>
+        <MuiEditModal open handleClose={handleClose} />
+      </Provider>
+    );
+
+    const cancelButton = screen.getByText('Cancel');
+    fireEvent.click(cancelButton);
+
+    expect(handleClose).toHaveBeenCalled();
+  });
 });

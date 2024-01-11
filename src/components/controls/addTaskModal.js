@@ -110,7 +110,7 @@ const MuiModal = (props) => {
 
                 <DialogActions>
                     <Button onClick={handleSubmitClick} autoFocus>Add</Button>
-                    <Button onClick={handleCloseDialog} >Cancle</Button>
+                    <Button onClick={handleCloseDialog} >Cancel</Button>
                 </DialogActions>
 
             </Dialog>

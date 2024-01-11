@@ -9,15 +9,33 @@ const App = () => {
 
     return (
         <>
-         <TaskReminders/>
+            {/* <TaskReminders/>
          <div className='App'>  
            <Paper sx={{ padding: '32px' }}>
                <Routing />
                <MuiButton />
            </Paper>
-       </div>
+       </div> */}
+            <div data-testid="task-reminders">
+                <TaskReminders />
+            </div>
+
+            <div className='App'>
+                <Paper sx={{ padding: '32px' }}>
+                    <>
+                        <div data-testid="routing">
+                            <Routing />
+                        </div>
+                        <div data-testid="mui-button">
+                            <MuiButton />
+                        </div>
+                    </>
+
+
+                </Paper>
+            </div>
         </>
-       
+
     )
 }
 
